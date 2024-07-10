@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>dashboard</title>
+</head>
+<body>
+    <h1>My Links</h1>
+    <table>
+        <tr>
+            <th>Original URL</th>
+            <th>Short URL</th>
+            <th>Actions</th>
+        </tr>
+        {{range .links}}
+        <tr>
+            <td>{{.OriginalURL}}</td>
+            <td>{{.ShortURL}}</td>
+            <td>
+                <button onclick="deleteLink('{{.ID}}')">Delete</button>
+                <input type="text" id="new-name-{{.ID}}" placeholder="New name">
+                <button onclick="updateLink('{{.ID}}')">Update</button>
+            </td>
+        </tr>
+        {{end}}
+    </table>
+    <a href="/">Back to Home</a>
+</body>
+<script>
+    function deleteLink(id) {
+        fetch('/dashboard', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id: id }),
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Failed to delete the link.');
+            }
+        });
+    }
+
+    function updateLink(id) {
+        const newName = document.getElementById(`new-name-${id}`).value;
+        fetch('/dashboard', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id: id, new_name: newName }),
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Failed to update the link.');
+            }
+        });
+    }
+</script>
+</html>

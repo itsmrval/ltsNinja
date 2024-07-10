@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>lksNinja - Raccourcisseur d'URL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    boxShadow: {
+                        'rainbow': '0 0 10px rgba(255, 0, 0, 0.2), 0 0 20px rgba(255, 165, 0, 0.2), 0 0 30px rgba(255, 255, 0, 0.2), 0 0 40px rgba(0, 255, 0, 0.2), 0 0 50px rgba(0, 0, 255, 0.2), 0 0 60px rgba(75, 0, 130, 0.2), 0 0 70px rgba(238, 130, 238, 0.2)',
+                        'color': '0 0 15px rgba(99, 102, 241, 0.4)'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="min-h-screen flex flex-col items-center justify-center p-4 bg-[url('/static/img/hero.svg')] bg-cover">
+    <h1 class="text-5xl p-4 text-center font-bold from-purple-600 via-pink-600 to-blue-600 bg-gradient-to-r bg-clip-text text-transparent">LKS <small>ninja</small></h1>
+    
+    <div class="bg-white/0 ring-1 ring-black/5 rounded-3xl p-8 w-full max-w-2xl backdrop-blur-md">
+        <div class="bg-white rounded-2xl p-6 shadow mb-6">
+            <form id="shorten-form" class="space-y-4">
+                <input type="url" id="url" name="url" placeholder="📋 Paste here your long link" required
+                       class="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                
+                <div class="flex space-x-4">
+                    <input type="text" id="custom-name" name="custom_name" placeholder="{{if .loggedIn}} my-custom-name {{else}} Login to enable custom names ✨ {{end}}" {{if not .loggedIn}}disabled{{end}}
+                           class="flex-grow px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300" >
+                    <button type="submit"
+                            class="px-6 py-2 bg-gradient-to-r from-pink-400 to-red-400 text-white rounded-full shadow hover:from-pink-500 hover:to-red-500 focus:outline-none focus:ring-2 focus:ring-red-300 transition duration-300 ease-in-out transform hover:scale-105">
+                        Generate 📬
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div id="result" class="hidden p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
+            <span class="font-medium">📨 URL Generated!</span>
+            <span id="result-link"></span>
+            <button id="copy-btn" class="ml-2 px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">Copy</button>
+        </div>
+        
+        <div class="mt-6 flex justify-between items-center">
+            {{if .loggedIn}}
+                <a href="/dashboard"
+                   class="px-6 py-2 bg-gradient-to-r from-green-400 to-blue-400 text-white rounded-full hover:from-green-500 hover:to-blue-500 focus:outline-none focus:ring-2 focus:ring-green-300 transition duration-300 ease-in-out transform hover:scale-105">
+                    Dashboard
+                </a>
+                <a href="/logout" class="px-6 py-2 bg-gradient-to-r from-purple-400 to-indigo-400 text-white rounded-full hover:from-purple-500 hover:to-indigo-500 focus:outline-none focus:ring-2 focus:ring-purple-300 transition duration-300 ease-in-out transform hover:scale-105">
+                    Logout
+                </a>
+            {{else}}
+                <a href="/login"
+                   class="px-6 py-2 bg-gradient-to-r from-blue-400 to-cyan-400 text-white rounded-full hover:from-blue-500 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-blue-300 transition duration-300 ease-in-out transform hover:scale-105">
+                    <i class="fab fa-github"></i> Login using GitHub
+                </a>
+            {{end}}
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('shorten-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetch('/', {
+                method: 'POST',
+                body: new FormData(this)
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.reset();
+                const resultBox = document.getElementById('result');
+                const resultLink = document.getElementById('result-link');
+                const shortURL = window.location.origin + '/' + data.shortURL;
+                resultLink.textContent = shortURL;
+                resultLink.setAttribute('data-url', shortURL);
+                resultBox.classList.remove('hidden');
+            });
+        });
+
+        document.getElementById('copy-btn').addEventListener('click', function() {
+            const resultLink = document.getElementById('result-link');
+            const url = resultLink.getAttribute('data-url');
+            navigator.clipboard.writeText(url).then(() => {
+                this.textContent = 'Copied!';
+                setTimeout(() => {
+                    this.textContent = 'Copy';
+                }, 1000);
+            })
+        });
+    </script>
+</body>
+</html>
