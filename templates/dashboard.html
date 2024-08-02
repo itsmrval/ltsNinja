@@ -1,64 +1,120 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>lksNinja - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    boxShadow: {
+                        'rainbow': '0 0 10px rgba(255, 0, 0, 0.2), 0 0 20px rgba(255, 165, 0, 0.2), 0 0 30px rgba(255, 255, 0, 0.2), 0 0 40px rgba(0, 255, 0, 0.2), 0 0 50px rgba(0, 0, 255, 0.2), 0 0 60px rgba(75, 0, 130, 0.2), 0 0 70px rgba(238, 130, 238, 0.2)',
+                        'color': '0 0 15px rgba(99, 102, 241, 0.4)'
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body>
-    <h1>My Links</h1>
-    <table>
-        <tr>
-            <th>Original URL</th>
-            <th>Short URL</th>
-            <th>Actions</th>
-        </tr>
-        {{range .links}}
-        <tr>
-            <td>{{.OriginalURL}}</td>
-            <td>{{.ShortURL}}</td>
-            <td>
-                <button onclick="deleteLink('{{.ID}}')">Delete</button>
-                <input type="text" id="new-name-{{.ID}}" placeholder="New name">
-                <button onclick="updateLink('{{.ID}}')">Update</button>
-            </td>
-        </tr>
-        {{end}}
-    </table>
-    <a href="/">Back to Home</a>
-</body>
-<script>
-    function deleteLink(id) {
-        fetch('/dashboard', {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ id: id }),
-        })
-        .then(response => {
-            if (response.ok) {
-                location.reload();
-            } else {
-                alert('Failed to delete the link.');
-            }
-        });
-    }
 
-    function updateLink(id) {
-        const newName = document.getElementById(`new-name-${id}`).value;
-        fetch('/dashboard', {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ id: id, new_name: newName }),
-        })
-        .then(response => {
-            if (response.ok) {
-                location.reload();
-            } else {
-                alert('Failed to update the link.');
-            }
-        });
-    }
-</script>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 bg-[url('/static/img/hero.svg')] bg-cover">
+    <img src="/static/img/logo.svg" width="128" height="128" class="mb-4" alt="Links Ninja">
+
+    <div class="bg-white/0 ring-1 ring-black/5 rounded-3xl p-8 w-full max-w-4xl backdrop-blur-md">
+        <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">👋 Welcome on your dashboard</h2>
+        <div id="error" class="hidden p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+            <span class="font-medium">⚠️ An error occured!</span>
+            <span id="error-content"></span>
+        </div>
+        <div class="bg-white rounded-2xl p-6 shadow mb-6 overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="px-4 py-2 text-left">Original URL</th>
+                        <th class="px-4 py-2 text-left">Short URL</th>
+                        <th class="px-4 py-2 text-left">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .links}}
+                    <tr class="border-b">
+                        <td class="px-4 py-2">{{.OriginalURL}}</td>
+                        <td class="px-4 py-2">
+                            <div class="flex items-center space-x-2">
+                                <input type="text" id="new-name-{{.ID}}" value="{{.ShortURL}}" placeholder="Short URL" class="px-2 py-1 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                <button onclick="updateLink('{{.ID}}')" class="px-3 py-1 bg-gradient-to-r from-green-400 to-blue-400 text-white rounded-full hover:from-green-500 hover:to-blue-500 focus:outline-none focus:ring-2 focus:ring-green-300 transition duration-300 ease-in-out transform hover:scale-105">
+                                    <i class="fa fa-pen"></i>
+                                </button>
+                            
+                            </div>
+                        </td>
+                        <td class="px py-2">
+                            <button onclick="deleteLink('{{.ID}}')" class="px-3 py-1 bg-gradient-to-r from-red-400 to-pink-400 text-white rounded-full hover:from-red-500 hover:to-pink-500 focus:outline-none focus:ring-2 focus:ring-red-300 transition duration-300 ease-in-out transform hover:scale-105">
+                                <i class="fa fa-trash"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="flex justify-center mb-4">
+            <small>Account ID: {{.userId }}</small>
+        </div>
+        <div class="flex justify-center">
+            <a href="/" class="px-6 py-2 bg-gradient-to-r from-purple-400 to-indigo-400 text-white rounded-full hover:from-purple-500 hover:to-indigo-500 focus:outline-none focus:ring-2 focus:ring-purple-300 transition duration-300 ease-in-out transform hover:scale-105">
+                Return to home
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const errorBox = document.getElementById('error');
+        const errorContent = document.getElementById('error-content');
+        const resultBox = document.getElementById('result');
+        const resultLink = document.getElementById('result-link');
+
+        function deleteLink(id) {
+            fetch('/dashboard', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: id }),
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    errorContent.textContent = 'Failed to delete the link.';
+                    errorBox.classList.remove('hidden');
+                    
+                }
+            });
+        }
+
+        function updateLink(id) {
+            const newName = document.getElementById(`new-name-${id}`).value;
+            fetch('/dashboard', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: id, new_name: newName }),
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    errorContent.textContent = 'Failed to update the link.';
+                    errorBox.classList.remove('hidden');
+                }
+            });
+        }
+    </script>
+</body>
 </html>

@@ -87,7 +87,7 @@ func (app *App) SetupRoutes() {
 	app.Router.GET("/login", app.loginGithub)
 	app.Router.GET("/callback", app.githubCallback)
 	app.Router.GET("/logout", app.logout)
-	app.Router.GET("/dashboard", app.myLinks)
+	app.Router.GET("/dashboard", app.dashboard)
 	app.Router.DELETE("/dashboard", app.deleteLink)
 	app.Router.PUT("/dashboard", app.updateLink)
 	app.Router.GET("/:shortURL", app.redirectToOriginal)
@@ -100,9 +100,9 @@ func (app *App) Run() error {
 
 func (app *App) createTable() error {
 	_, err := app.DB.Exec(`CREATE TABLE IF NOT EXISTS links (
-		id TEXT PRIMARY KEY,
+		id TEXT PRIMARY KEY NOT NULL UNIQUE,
 		original_url TEXT NOT NULL,
-		short_url TEXT NOT NULL,
+		short_url TEXT NOT NULL UNIQUE,
 		user_id TEXT
 	)`)
 	return err
@@ -136,6 +136,10 @@ func (app *App) shortenURL(c *gin.Context) {
 		id, originalURL, shortURL, userID)
 	if err != nil {
 		log.Printf("Error inserting link: %v", err)
+		if err.Error() == "UNIQUE constraint failed: links.short_url" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Short URL already exists"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -183,7 +187,7 @@ func (app *App) githubCallback(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/")
 }
 
-func (app *App) myLinks(c *gin.Context) {
+func (app *App) dashboard(c *gin.Context) {
 	userID := getUserID(c)
 	if userID == "" {
 		c.Redirect(http.StatusFound, "/")
@@ -208,7 +212,7 @@ func (app *App) myLinks(c *gin.Context) {
 		links = append(links, link)
 	}
 
-	c.HTML(http.StatusOK, "dashboard.html", gin.H{"links": links})
+	c.HTML(http.StatusOK, "dashboard.html", gin.H{"links": links, "userId": userID})
 }
 
 func (app *App) deleteLink(c *gin.Context) {
@@ -247,6 +251,10 @@ func (app *App) updateLink(c *gin.Context) {
 
 	_, err := app.DB.Exec("UPDATE links SET short_url = ? WHERE id = ? AND user_id = ?", payload.NewName, payload.ID, userID)
 	if err != nil {
+		if err.Error() == "UNIQUE constraint failed: links.short_url" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Short URL already exists"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": err.Error()})
 		return
 	}
