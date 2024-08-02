@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -21,6 +22,9 @@ import (
 
 //go:embed templates/*
 var templatesFS embed.FS
+
+//go:embed static/*
+var staticFS embed.FS
 
 type Link struct {
 	ID          string
@@ -87,7 +91,8 @@ func initGithubOAuth() *oauth2.Config {
 }
 
 func (app *App) SetupRoutes() {
-	app.Router.Static("/static", "./static")
+	staticContent, _ := fs.Sub(staticFS, "static")
+	app.Router.StaticFS("/static", http.FS(staticContent))
 	app.Router.GET("/", app.homePage)
 	app.Router.POST("/", app.shortenURL)
 	app.Router.GET("/login", app.loginGithub)
