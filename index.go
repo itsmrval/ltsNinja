@@ -19,6 +19,7 @@ import (
 	"golang.org/x/oauth2/github"
 )
 
+//go:embed templates/*
 var templatesFS embed.FS
 
 type Link struct {
