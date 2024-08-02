@@ -30,7 +30,8 @@ type App struct {
 	Router            *gin.Engine
 }
 
-func NewApp() (*App, error) {
+func initialize() (*App, error) {
+	gin.SetMode(gin.ReleaseMode)
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
 	}
@@ -39,7 +40,6 @@ func NewApp() (*App, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize database: %w", err)
 	}
-
 	oauthConfig := initGithubOAuth()
 
 	router := gin.Default()
@@ -95,6 +95,7 @@ func (app *App) SetupRoutes() {
 
 func (app *App) Run() error {
 	port := os.Getenv("PORT")
+	log.Println("Server running on port :" + port)
 	return app.Router.Run(":" + port)
 }
 
@@ -290,7 +291,7 @@ func getUserID(c *gin.Context) string {
 }
 
 func main() {
-	app, err := NewApp()
+	app, err := initialize()
 	if err != nil {
 		log.Fatalf("Failed to initialize app: %v", err)
 	}
