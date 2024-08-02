@@ -2,8 +2,10 @@ package main
 
 import (
 	"database/sql"
+	"embed"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -16,6 +18,8 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 )
+
+var templatesFS embed.FS
 
 type Link struct {
 	ID          string
@@ -43,6 +47,8 @@ func initialize() (*App, error) {
 	oauthConfig := initGithubOAuth()
 
 	router := gin.Default()
+	tmpl := template.Must(template.ParseFS(templatesFS, "templates/*"))
+	router.SetHTMLTemplate(tmpl)
 
 	return &App{
 		DB:                db,
@@ -80,7 +86,6 @@ func initGithubOAuth() *oauth2.Config {
 }
 
 func (app *App) SetupRoutes() {
-	app.Router.LoadHTMLGlob("templates/*")
 	app.Router.Static("/static", "./static")
 	app.Router.GET("/", app.homePage)
 	app.Router.POST("/", app.shortenURL)
