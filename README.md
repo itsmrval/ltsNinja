@@ -83,7 +83,7 @@ Now let's see how to set up an ltsNinja instance.
    ```
 2. Download the latest release and apply permissions
    ```sh
-   wget -O ltsNinja https://github.com/itsmrval/ltsNinja/releases/download/0.1.0/ltsNinja_linux_amd64
+   wget -O ltsNinja https://github.com/itsmrval/ltsNinja/releases/download/0.1.1/ltsNinja_linux_amd64
    chmod +x ltsNinja
    ```
 3. Create the service on systemd
