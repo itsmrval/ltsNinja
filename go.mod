@@ -1,4 +1,4 @@
-module itsmrval/lksNinja
+module itsmrval/ltsNinja
 
 go 1.22.5
 
