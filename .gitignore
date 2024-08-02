@@ -9,6 +9,8 @@
 *.dylib
 .DS_Store
 
+build
+
 database.db
 .env
 
