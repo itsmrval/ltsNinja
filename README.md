@@ -81,22 +81,39 @@ Now let's see how to set up an ltsNinja instance.
    mkdir /opt/ltsNinja
    cd /opt/ltsNinja
    ```
-2. Download the latest release
+2. Download the latest release and apply permissions
    ```sh
    wget -O ltsNinja https://github.com/itsmrval/ltsNinja/releases/download/0.1.0/ltsNinja_linux_amd64
-   ```
-3. Download the example env
-   ```sh
-   wget -O .env https://github.com/itsmrval/ltsNinja/releases/download/0.1.0/example.env
-   ```
-4. Complete `.env`
-	* GITHUB_CLIENT_ID & GITHUB_CLIENT_SECRET with your [Github app](https://github.com/settings/developers)
-	* GITHUB_REDIRECT_URL replacing the APP URL
-	
-6. Run it
-   ```js
    chmod +x ltsNinja
-   ./ltsNinja
+   ```
+3. Create the service on systemd
+   Write the file
+   ```sh
+   nano /etc/systemd/system/ltsNinja.service
+   ```
+   Complete and put the service file below:
+   	```txt
+   	[Unit]
+	Description=LTS Ninja service
+	After=network.target
+	
+	[Service]
+	Type=simple
+	ExecStart=/opt/ltsNinja/ltsNinja
+	Environment="GITHUB_CLIENT_ID=<REPLACE HERE>"
+	Environment="GITHUB_CLIENT_SECRET=<REPLACE HERE>"
+	Environment="GITHUB_REDIRECT_URL=https://<REPLACE HERE>/callback"
+	Environment="DB_PATH=/opt/ltsNinja/database.db"
+	Environment="PORT=8080"
+	
+	[Install]
+	WantedBy=multi-user.target
+   	```
+   
+6. Reload systemd and run the service !
+   ```sh
+   systemctl daemon-reload
+   systemctl enable --now ltsNinja
    ```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
