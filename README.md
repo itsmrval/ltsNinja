@@ -1,7 +1,7 @@
 <br />
 <div id="readme-top" align="center">
   <a href="https://github.com/itsmrval/ltsninja">
-    <img src="https://raw.githubusercontent.com/itsmrval/ltsNinja/main/static/img/logo.svg" alt="Logo" width="120" height="120">
+    <img src="https://raw.githubusercontent.com/itsmrval/ltsNinja/main/src/static/img/logo.svg" alt="Logo" width="120" height="120">
   </a>
 
   <h3 align="center">ltsNinja</h3>
